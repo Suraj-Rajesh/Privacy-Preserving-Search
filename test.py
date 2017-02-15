@@ -1,0 +1,3 @@
+from pps.index_generator import generate_plain_index_driver
+
+generate_plain_index_driver("document_corpus/prepared_documents")
