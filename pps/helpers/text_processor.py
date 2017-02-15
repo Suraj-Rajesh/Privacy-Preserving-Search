@@ -13,9 +13,10 @@ lemmatizer = WordNetLemmatizer()
 # Remove unicode
 def remove_unicode(string):
     try:
-        return string.decode('unicode_escape').encode('ascii','ignore')
+        return (bytes(string, "utf-8")).decode('unicode_escape')
     except Exception as details:
         print("Exception in: do_parser.remove_unicode()")
+        print(details)
         return "a"
 
 # Process text, extract and tokenize words
