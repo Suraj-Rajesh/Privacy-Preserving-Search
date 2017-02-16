@@ -13,7 +13,6 @@ corpus_textblobs = dict()
 n = 0
 
 def find_two_exponent(number):
-    """x4u on Mark Byers -- limit:   v < 2**33"""
     r = 0
 
     if number > 0xffff : 
@@ -60,6 +59,20 @@ def generate_token_map(save_directory = None):
     if save_directory is not None:
         save_object(save_directory + "/token_map.pkl", token_map)
 
+def create_vsm_hash(vsm_hash_1, vsm_hash_2):
+    builder_set = set()
+    new_vsm_hash = dict()
+
+    for key in vsm_hash_1.keys():
+        builder_set.add(key)
+
+    for key in vsm_hash_2.keys():
+        builder_set.add(key)
+
+    new_vsm_hash = list(builder_set)
+
+    return new_vsm_hash
+
 def build_bbt(corpus_textblobs, save_directory = None):
     global n
 
@@ -71,25 +84,37 @@ def build_bbt(corpus_textblobs, save_directory = None):
             # Calculate score of all words in the textblob corresponding to that file
             word_score_index = {word: tfidf(word, textblob, corpus_textblobs) for word in textblob.words}
             # Index each word into the plain search index
-            
-            # Create VSM
-            vsm = [0] * n
+           
+            vsm_hash = dict()
 
             for word in word_score_index:
-                vsm[token_map[word]] = word_score_index[word] 
+                vsm_hash[token_map[word][0]] = word_score_index[word] 
 
             # Create node & add to processing list
-            file_node = Node(vsm, filename = filename)       
+            file_node = Node(vsm_hash, filename = filename)       
             current_processing_list.append(file_node)
-            stages_of_processing = find_two_exponent(len(current_processing_list))
+
+        stages_of_processing = find_two_exponent(len(current_processing_list))
     
-        # 2^(Stage) stages of processing for a balanced binary tree
-        for stage in range(stages_of_processing):
+        # First stage handled separately as internal nodes store vsm indices as list from vsm_hash of file nodes
+        new_processing_list = list()
+        for i in range(0, len(current_processing_list), 2):
+            new_vsm_hash = create_vsm_hash(current_processing_list[i].vsm_hash, current_processing_list[i + 1].vsm_hash)
+            new_internal_node = Node(new_vsm_hash, left = current_processing_list[i], right = current_processing_list[i + 1])
+            new_processing_list.append(new_internal_node)
+
+        current_processing_list = new_processing_list
+
+        # 2^(Stage)-1 stages of processing for a balanced binary tree
+        # Generating internal nodes
+        for stage in range(stages_of_processing - 1):
             new_processing_list = list()
 
             for i in range(0, len(current_processing_list), 2):
-                new_vsm = [ceil(x or y) for x,y in zip(current_processing_list[i].vsm, current_processing_list[i + 1].vsm)]
-                new_internal_node = Node(new_vsm, left = current_processing_list[i], right = current_processing_list[i + 1])
+            #    new_vsm = [ceil(x or y) for x,y in zip(current_processing_list[i].vsm, current_processing_list[i + 1].vsm)]
+            #    new_vsm_hash = create_vsm_hash(current_processing_list[i].vsm_hash, current_processing_list[i + 1].vsm_hash)
+                new_vsm_hash = list(set().union(current_processing_list[i].vsm_hash, current_processing_list[i + 1].vsm_hash))
+                new_internal_node = Node(new_vsm_hash, left = current_processing_list[i], right = current_processing_list[i + 1])
                 new_processing_list.append(new_internal_node)
             
             current_processing_list = new_processing_list

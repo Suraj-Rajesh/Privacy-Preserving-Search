@@ -11,3 +11,12 @@ def get_transpose(matrix):
 
 def matrix_multiplication(matrix_1, matrix_2):
     return np.dot(matrix_1, matrix_2)
+
+def vsm_hash_to_vsm(n, vsm_hash, query_indices):
+    vsm = [0] * n
+
+    for index in query_indices:
+        try:
+            vsm[index] = vsm_hash[index]
+        except KeyError:
+            pass
