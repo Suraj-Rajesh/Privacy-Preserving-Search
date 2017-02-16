@@ -42,7 +42,7 @@ def load_documents(directory):
         textblob = tb(text)
         corpus_textblobs[filename] = textblob
 
-def generate_token_map():
+def generate_token_map(save_directory = None):
     global token_map
     global corpus_textblobs
     global n
@@ -52,12 +52,15 @@ def generate_token_map():
     for file_content in corpus_textblobs.values():
         for word in file_content.words:
             if word not in token_map:
-                token_map[word] = index
+                token_map[word] = [index, idf(word, corpus_textblobs)]
                 index += 1
 
     n = len(token_map)
 
-def build_bbt(corpus_textblobs):
+    if save_directory is not None:
+        save_object(save_directory + "/token_map.pkl", token_map)
+
+def build_bbt(corpus_textblobs, save_directory = None):
     global n
 
     try:
@@ -78,9 +81,10 @@ def build_bbt(corpus_textblobs):
             # Create node & add to processing list
             file_node = Node(vsm, filename = filename)       
             current_processing_list.append(file_node)
+            stages_of_processing = find_two_exponent(len(current_processing_list))
     
         # 2^(Stage) stages of processing for a balanced binary tree
-        for stage in range(find_two_exponent(n)):
+        for stage in range(stages_of_processing):
             new_processing_list = list()
 
             for i in range(0, len(current_processing_list), 2):
@@ -91,8 +95,9 @@ def build_bbt(corpus_textblobs):
             current_processing_list = new_processing_list
 
         root_node = current_processing_list[0]
-        # To verify
-        print(len(current_processing_list))
+
+        if save_directory is not None:
+            save_object(save_directory + "/plain_bbt.pkl", root_node)
 
     except KeyboardInterrupt:
         pass
@@ -106,8 +111,11 @@ def load_object(index_file):
         index = load(inpt)
     return index
 
-def start_plain_index_generation(prepared_documents_path):
+def start_plain_index_generation(prepared_documents_path, save_directory = None):
+    global corpus_textblobs
+
     print("Generating textblobs...")
     load_documents(prepared_documents_path)
     print("Preparing index...")
-    generate_token_map()
+    generate_token_map(save_directory = save_directory)
+    build_bbt(corpus_textblobs, save_directory = save_directory)
