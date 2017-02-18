@@ -1,5 +1,7 @@
 from os import listdir
 from random import randint
+from uuid import uuid4
+from hashlib import sha256
 
 from textblob import TextBlob as tb
 
@@ -10,6 +12,8 @@ from pps.helpers.operations import load_object, save_object, generate_random_inv
 token_map = dict()
 corpus_textblobs = dict()
 secret = list()
+salt = uuid4().hex
+
 # Term count in corpus
 n = 0
 
@@ -64,10 +68,15 @@ def generate_token_map_and_secret(index_directory, key_directory):
 
     n = len(token_map)
 
+    # Hash token map into a new encrypted token map
+    encrypted_token_map = dict()
+    encrypted_token_map = { sha256(salt.encode() + token.encode()).hexdigest() : [ sha256(salt.encode() + str(metadata[0]).encode()).hexdigest(), metadata[1]] for token, metadata in token_map.items()}
+
     # Generate secret
     secret = [randint(0, 1) for i in range(n)]
 
     save_object(index_directory + "/token_map.pkl", token_map)
+    save_object(index_directory + "/encrypted_token_map.pkl", encrypted_token_map)
     save_object(key_directory + "/secret.pkl", secret)
 
 def create_vsm_hash(vsm_hash_1, vsm_hash_2):
@@ -107,6 +116,7 @@ def encrypt_vsm(vsm_hash):
 
 def build_bbt(corpus_textblobs, index_directory):
     global n
+    global salt
 
     try:
         current_processing_list = list()
@@ -136,6 +146,8 @@ def build_bbt(corpus_textblobs, index_directory):
         new_processing_list = list()
         for i in range(0, len(current_processing_list), 2):
             new_vsm_hash = create_vsm_hash(current_processing_list[i].vsm_hash, current_processing_list[i + 1].vsm_hash)
+            #encrypt vsm hash
+            new_vsm_hash = [sha256(salt.encode() + str(value).encode()).hexdigest() for value in new_vsm_hash]
 
             current_processing_list[i].vsm_hash = None
             current_processing_list[i + 1].vsm_hash = None
@@ -154,6 +166,10 @@ def build_bbt(corpus_textblobs, index_directory):
             #    new_vsm = [ceil(x or y) for x,y in zip(current_processing_list[i].vsm, current_processing_list[i + 1].vsm)]
             #    new_vsm_hash = create_vsm_hash(current_processing_list[i].vsm_hash, current_processing_list[i + 1].vsm_hash)
                 new_vsm_hash = list(set().union(current_processing_list[i].vsm_hash, current_processing_list[i + 1].vsm_hash))
+
+                #encrypt vsm hash
+                new_vsm_hash = [sha256(salt.encode() + str(value).encode()).hexdigest() for value in new_vsm_hash]
+
                 new_internal_node = Node(vsm_hash = new_vsm_hash, left = current_processing_list[i], right = current_processing_list[i + 1])
                 new_processing_list.append(new_internal_node)
             
@@ -168,6 +184,7 @@ def build_bbt(corpus_textblobs, index_directory):
 
 def start_index_generation(prepared_documents_path, index_directory, key_directory):
     global corpus_textblobs
+    global salt
     global m1t
     global m2t
     global m1i
@@ -176,6 +193,7 @@ def start_index_generation(prepared_documents_path, index_directory, key_directo
     print("Generating textblobs...")
     load_documents(prepared_documents_path)
     print("Preparing index...")
+    save_object(key_directory + "/salt.pkl", salt)
     generate_token_map_and_secret(index_directory, key_directory)
 
     # Create random invertible matrices and store Mt and Mi
