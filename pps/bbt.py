@@ -11,11 +11,15 @@ class Node(object):
         self.encrypted_vsm_hash_1 = encrypted_vsm_hash_1
         self.encrypted_vsm_hash_2 = encrypted_vsm_hash_2
 
-    def get_file_nodes(self):
+    # file_list should be an empty list
+    def get_file_nodes(self, file_list):
+
         if self:
             if self.left is None or self.right is None:
-                print(self.filename)
+                file_list.append(self.filename)
             if self.left:
-                self.left.get_file_nodes()
+                self.left.get_file_nodes(file_list)
             if self.right:
-                self.right.get_file_nodes()
+                self.right.get_file_nodes(file_list)
+
+        return file_list

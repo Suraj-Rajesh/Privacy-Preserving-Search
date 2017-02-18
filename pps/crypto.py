@@ -1,9 +1,12 @@
+from os import urandom
+
 from Crypto.Cipher import AES
+from Crypto.Protocol.KDF import PBKDF2
 from Crypto import Random
 from base64 import b64encode
 from  hashlib import sha256
 
-AES_BS = 16
+AES_BS = 32
 
 pad = lambda data: data + (AES_BS - len(data) % AES_BS) * chr(AES_BS - len(data) % AES_BS)
 unpad = lambda data : data[:-ord(data[len(data)-1:])]
@@ -14,8 +17,15 @@ def generate_aes_key():
     if save_directory[-1] != '/':
         save_directory = save_directory + "/"
     name_of_the_key = input("Name of the key: ")
-    aes_key = sha256(passphrase.encode()).digest()
-    print(len(aes_key))
+
+    # Method 1
+#    aes_key = sha256(passphrase.encode()).digest()
+
+    # Method 2: Key stretching (more secure)
+    # http://bityard.blogspot.com/2012/08/symmetric-crypto-with-pycrypto-part-3.html
+    salt = urandom(32)
+    aes_key = PBKDF2(passphrase, salt, dkLen = 32, count = 5000)
+
     return aes_key
 
 def aes_encrypt(plain_data, aes_key):

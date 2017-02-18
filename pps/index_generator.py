@@ -56,7 +56,7 @@ def load_documents(directory):
         textblob = tb(text)
         corpus_textblobs[filename] = textblob
 
-def generate_token_map_and_secret(index_directory, key_directory):
+def generate_token_map_and_secret(index_directory):
     global token_map
     global corpus_textblobs
     global n
@@ -81,7 +81,7 @@ def generate_token_map_and_secret(index_directory, key_directory):
 
     save_object(index_directory + "/token_map.pkl", token_map)
     save_object(index_directory + "/encrypted_token_map.pkl", encrypted_token_map)
-    save_object(key_directory + "/secret.pkl", secret)
+    save_object(index_directory + "/secret.pkl", secret)
 
 def create_vsm_hash(vsm_hash_1, vsm_hash_2):
     builder_set = set()
@@ -185,7 +185,7 @@ def build_bbt(corpus_textblobs, index_directory):
     except KeyboardInterrupt:
         pass
 
-def start_index_generation(prepared_documents_path, index_directory, key_directory):
+def start_index_generation(prepared_documents_path, index_directory):
     global corpus_textblobs
     global salt
     global aes_key
@@ -200,12 +200,12 @@ def start_index_generation(prepared_documents_path, index_directory, key_directo
 
     print("Preparing index...")
 
-    save_object(key_directory + "/salt.pkl", salt)
+    save_object(index_directory + "/salt.pkl", salt)
 
-    generate_aes_key()
-    save_object(key_directory + "/aes_key.pkl", aes_key)
+    aes_key = generate_aes_key()
+    save_object(index_directory + "/aes_key.pkl", aes_key)
 
-    generate_token_map_and_secret(index_directory, key_directory)
+    generate_token_map_and_secret(index_directory)
 
     # Create random invertible matrices and store Mt and Mi
     m1 = generate_random_invertible_matrix(n, 3, 100)
