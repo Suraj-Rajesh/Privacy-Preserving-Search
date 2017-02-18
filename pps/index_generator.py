@@ -6,13 +6,17 @@ from hashlib import sha256
 from textblob import TextBlob as tb
 
 from pps.bbt import Node
+from pps.crypto import generate_aes_key, aes_encrypt, aes_decrypt
 from pps.helpers.tf_idf_generator import tf, n_containing, idf, tfidf
 from pps.helpers.operations import load_object, save_object, generate_random_invertible_matrix, get_transpose, get_inverse, matrix_multiplication, vsm_hash_to_vsm
 
 token_map = dict()
 corpus_textblobs = dict()
 secret = list()
+
+# Keys and salt
 salt = uuid4().hex
+aes_key = 0
 
 # Term count in corpus
 n = 0
@@ -117,6 +121,7 @@ def encrypt_vsm(vsm_hash):
 def build_bbt(corpus_textblobs, index_directory):
     global n
     global salt
+    global aes_key
 
     try:
         current_processing_list = list()
@@ -135,9 +140,7 @@ def build_bbt(corpus_textblobs, index_directory):
             # Encrypt vsm hash of file node, create file node & add to processing list
             (encrypted_vsm_hash_1, encrypted_vsm_hash_2) = encrypt_vsm(vsm_hash)
 
-#            encrypted_vsm_hash_1 = None
-#            encrypted_vsm_hash_2 = None
-            file_node = Node(vsm_hash = vsm_hash, filename = filename, encrypted_vsm_hash_1 = encrypted_vsm_hash_1, encrypted_vsm_hash_2 = encrypted_vsm_hash_2)       
+            file_node = Node(vsm_hash = vsm_hash, filename = aes_encrypt(filename, aes_key), encrypted_vsm_hash_1 = encrypted_vsm_hash_1, encrypted_vsm_hash_2 = encrypted_vsm_hash_2)       
             current_processing_list.append(file_node)
 
         stages_of_processing = find_two_exponent(len(current_processing_list))
@@ -185,15 +188,23 @@ def build_bbt(corpus_textblobs, index_directory):
 def start_index_generation(prepared_documents_path, index_directory, key_directory):
     global corpus_textblobs
     global salt
+    global aes_key
     global m1t
     global m2t
     global m1i
     global m2i
 
     print("Generating textblobs...")
+
     load_documents(prepared_documents_path)
+
     print("Preparing index...")
+
     save_object(key_directory + "/salt.pkl", salt)
+
+    generate_aes_key()
+    save_object(key_directory + "/aes_key.pkl", aes_key)
+
     generate_token_map_and_secret(index_directory, key_directory)
 
     # Create random invertible matrices and store Mt and Mi
