@@ -5,7 +5,7 @@ from pps.helpers.operations import load_object
 start_index_generation("document_corpus/prepared_documents", "index")
 
 # Test 2
-root = load_object("index/semi_encrypted_bbt.pkl")
+root = load_object("index/encrypted_bbt.pkl")
 file_leaves = list()
 file_leaves = root.get_file_nodes(file_leaves)
 

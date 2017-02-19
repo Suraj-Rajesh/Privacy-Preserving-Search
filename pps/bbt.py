@@ -23,3 +23,17 @@ class Node(object):
                 self.right.get_file_nodes(file_list)
 
         return file_list
+
+    # Search for file nodes containing query indices
+    # NOTE: & on set's is intersection
+    def search(self, query_indices, file_nodes):
+
+        if self:
+            if self.left is None and self.right is None:
+                file_nodes.append(self)
+            if self.left and bool(set(query_indices) & set(self.vsm_hash)):
+                self.left.search(query_indices, file_nodes)
+            if self.right and bool(set(query_indices) & set(self.vsm_hash)):
+                self.right.search(query_indices, file_nodes)
+
+        return file_nodes

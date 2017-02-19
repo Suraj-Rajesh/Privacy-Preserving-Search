@@ -74,7 +74,8 @@ def generate_token_map_and_secret(index_directory):
 
     # Hash token map into a new encrypted token map
     encrypted_token_map = dict()
-    encrypted_token_map = { sha256(salt.encode() + token.encode()).hexdigest() : [ sha256(salt.encode() + str(metadata[0]).encode()).hexdigest(), metadata[1]] for token, metadata in token_map.items()}
+#    encrypted_token_map = { sha256(salt.encode() + token.encode()).hexdigest() : [ sha256(salt.encode() + str(metadata[0]).encode()).hexdigest(), metadata[1]] for token, metadata in token_map.items()}
+    encrypted_token_map = { sha256(salt.encode() + token.encode()).hexdigest() : metadata for token, metadata in token_map.items()}
 
     # Generate secret
     secret = [randint(0, 1) for i in range(n)]
@@ -149,7 +150,7 @@ def build_bbt(corpus_textblobs, index_directory):
         new_processing_list = list()
         for i in range(0, len(current_processing_list), 2):
             new_vsm_hash = create_vsm_hash(current_processing_list[i].vsm_hash, current_processing_list[i + 1].vsm_hash)
-            #encrypt vsm hash
+            # Encrypt vsm hash
             new_vsm_hash = [sha256(salt.encode() + str(value).encode()).hexdigest() for value in new_vsm_hash]
 
             current_processing_list[i].vsm_hash = None
@@ -170,9 +171,6 @@ def build_bbt(corpus_textblobs, index_directory):
             #    new_vsm_hash = create_vsm_hash(current_processing_list[i].vsm_hash, current_processing_list[i + 1].vsm_hash)
                 new_vsm_hash = list(set().union(current_processing_list[i].vsm_hash, current_processing_list[i + 1].vsm_hash))
 
-                #encrypt vsm hash
-                new_vsm_hash = [sha256(salt.encode() + str(value).encode()).hexdigest() for value in new_vsm_hash]
-
                 new_internal_node = Node(vsm_hash = new_vsm_hash, left = current_processing_list[i], right = current_processing_list[i + 1])
                 new_processing_list.append(new_internal_node)
             
@@ -180,7 +178,7 @@ def build_bbt(corpus_textblobs, index_directory):
 
         root_node = current_processing_list[0]
 
-        save_object(index_directory + "/semi_encrypted_bbt.pkl", root_node)
+        save_object(index_directory + "/encrypted_bbt.pkl", root_node)
 
     except KeyboardInterrupt:
         pass

@@ -25,7 +25,7 @@ def save_object(filename, obj):
     with open(filename, "wb") as output:
         dump(obj, output, -1)
 
-def load_object(index_file):
-    with open(index_file, "rb") as inpt:
+def load_object(object_file):
+    with open(object_file, "rb") as inpt:
         index = load(inpt, encoding="latin1")
     return index
