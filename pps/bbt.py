@@ -29,7 +29,7 @@ class Node(object):
     def search(self, query_indices, file_nodes):
 
         if self:
-            if self.left is None and self.right is None:
+            if self.left is None and self.right is None and bool(set(query_indices) & set(self.vsm_hash)):
                 file_nodes.append(self)
             if self.left and bool(set(query_indices) & set(self.vsm_hash)):
                 self.left.search(query_indices, file_nodes)
