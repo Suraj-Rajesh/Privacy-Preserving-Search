@@ -3,7 +3,7 @@ from os import urandom
 from Crypto.Cipher import AES
 from Crypto.Protocol.KDF import PBKDF2
 from Crypto import Random
-from base64 import b64encode
+from base64 import b64encode, b64decode
 from  hashlib import sha256
 
 AES_BS = 32
@@ -35,7 +35,7 @@ def aes_encrypt(plain_data, aes_key):
     return b64encode(iv + cipher.encrypt(plain_data))
 
 def aes_decrypt(encrypted_data, aes_key):
-    encrypted_data = base64.b64decode(encrypted_data)
+    encrypted_data = b64decode(encrypted_data)
     iv = encrypted_data[:16]
     cipher = AES.new(aes_key, AES.MODE_CBC, iv)
     return unpad(cipher.decrypt(encrypted_data[16:]))
