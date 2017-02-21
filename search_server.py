@@ -3,6 +3,7 @@ import socket
 from time import time
 from random import randint
 from operator import itemgetter
+from math import sqrt
 
 from hashlib import sha256
 
@@ -76,6 +77,10 @@ class SearchServer(object):
 
             # Create query map: index:idf
             query_map = {self.encrypted_token_map[query][0] : self.encrypted_token_map[query][1] for query in hashed_query_terms}
+
+            # Create normalized idf for query map
+            normalization = sqrt(sum([ pow(idf, 2) for idf in query_map.values()]))
+            query_map = { encrypted_index : idf/normalization for encrypted_index, idf in query_map.items() }
 
             # Generate q1 and q2
             q1 = query_map
