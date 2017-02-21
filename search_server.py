@@ -39,6 +39,7 @@ class SearchServer(object):
 
     def start(self):
         # Start listening for incoming requests
+        print("\nServer ready...\n")
         while 1:
             connection, address = self.serverSock.accept()
             threading.Thread(target=self.requestHandler, args=(connection, address)).start()
@@ -131,4 +132,5 @@ if __name__ == "__main__":
         encrypted_search_server = SearchServer()
         encrypted_search_server.start()
     except KeyboardInterrupt:
+        encrypted_search_server.serverSock.close()
         print("Server shutting down...\n")

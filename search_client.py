@@ -12,7 +12,7 @@ class Search_Client(object):
         for filename in server_response.ranked_list:
             print(filename)
         print("\nNumber of matching files: " + str(len(server_response.ranked_list)))
-        print("\nServer query processing time: " + str(server_response.time_to_process) + " ms")
+        print("\nServer query processing time: " + str(server_response.time_to_process) + " s")
 
     def start_console(self):
         try:
