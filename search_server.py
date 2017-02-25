@@ -4,6 +4,7 @@ from time import time
 from random import randint
 from operator import itemgetter
 from math import sqrt
+from copy import deepcopy
 
 from hashlib import sha256
 
@@ -84,8 +85,8 @@ class SearchServer(object):
             query_map = { encrypted_index : idf/normalization for encrypted_index, idf in query_map.items() }
 
             # Generate q1 and q2
-            q1 = query_map
-            q2 = query_map
+            q1 = deepcopy(query_map)
+            q2 = deepcopy(query_map)
 
             for index in query_map.keys():
                 if self.secret[index] == 0:

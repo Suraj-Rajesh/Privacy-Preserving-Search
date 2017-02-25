@@ -2,6 +2,7 @@ from os import listdir
 from random import randint
 from uuid import uuid4
 from hashlib import sha256
+from copy import deepcopy
 
 from textblob import TextBlob as tb
 
@@ -103,14 +104,14 @@ def encrypt_vsm(vsm_hash):
     global m1t
     global m2t
 
-    encrypted_vsm_hash_1 = vsm_hash
-    encrypted_vsm_hash_2 = vsm_hash
+    encrypted_vsm_hash_1 = deepcopy(vsm_hash)
+    encrypted_vsm_hash_2 = deepcopy(vsm_hash)
 
     for index in range(len(secret)):
         if secret[index] == 1:
             if index in vsm_hash:
                 # Split randomly such that their addition equals the original value
-                encrypted_vsm_hash_1[index] = vsm_hash[index]/(randint(2, 6))
+                encrypted_vsm_hash_1[index] = vsm_hash[index]/(randint(2, 4))
                 encrypted_vsm_hash_2[index] = vsm_hash[index] - encrypted_vsm_hash_1[index]
 
     encrypted_vsm_hash_1 = matrix_multiplication(m1t, vsm_hash_to_vsm(n, encrypted_vsm_hash_1))
@@ -208,8 +209,8 @@ def start_index_generation(prepared_documents_path, index_directory):
     generate_token_map_and_secret(index_directory)
 
     # Create random invertible matrices and store Mt and Mi
-    m1 = generate_random_invertible_matrix(n, 3, 100)
-    m2 = generate_random_invertible_matrix(n, 3, 100)
+    m1 = generate_random_invertible_matrix(n, 3, 50)
+    m2 = generate_random_invertible_matrix(n, 3, 50)
 
     # Get transpose of matrices
     m1t = get_transpose(m1)
