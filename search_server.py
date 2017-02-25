@@ -65,10 +65,12 @@ class SearchServer(object):
 
         # Prepare hashed index for query indices
         hashed_indices = list()
+        searchable_hashed_terms = list()
 
         for query in hashed_query_terms:
             if query in self.encrypted_token_map:
                 hashed_indices.append(sha256(self.salt.encode() + str(self.encrypted_token_map[query][0]).encode()).hexdigest())
+                searchable_hashed_terms.append(query)
 
         ranked_result = list()
 
@@ -78,7 +80,7 @@ class SearchServer(object):
             file_nodes = self.encrypted_bbt.search(hashed_indices, file_nodes)
 
             # Create query map: index:idf
-            query_map = {self.encrypted_token_map[query][0] : self.encrypted_token_map[query][1] for query in hashed_query_terms}
+            query_map = {self.encrypted_token_map[query][0] : self.encrypted_token_map[query][1] for query in searchable_hashed_terms}
 
             # Create normalized idf for query map
             normalization = sqrt(sum([ pow(idf, 2) for idf in query_map.values()]))
