@@ -72,6 +72,7 @@ def generate_token_map_and_secret(index_directory):
                 index += 1
 
     n = len(token_map)
+    save_object(index_directory + "/n.pkl", n)
 
     # Hash token map into a new encrypted token map
     encrypted_token_map = dict()
@@ -195,11 +196,13 @@ def start_index_generation(prepared_documents_path, index_directory):
     global m1i
     global m2i
 
-    print("Generating textblobs...")
+    # STAGE 1
+
+    print("\nSTAGE 1: \n\nGenerating textblobs...\n")
 
     load_documents(prepared_documents_path)
 
-    print("Preparing index...")
+    print("Preparing index...\n")
 
     save_object(index_directory + "/salt.pkl", salt)
 
@@ -208,22 +211,30 @@ def start_index_generation(prepared_documents_path, index_directory):
 
     generate_token_map_and_secret(index_directory)
 
+    # STAGE 2
     # Create random invertible matrices and store Mt and Mi
-    m1 = generate_random_invertible_matrix(n, 3, 50)
-    m2 = generate_random_invertible_matrix(n, 3, 50)
+    # This is being done as matrix generation from python prompt was much faster than generating it here in the function(esp. for  large matrices)
+    user_input = input("\nEntering STAGE 2 of index generation:\n\n1. Go to pps/helpers directory\n2. Load python3 prompt\n3. Import: from operations import *\nn = load_object('../../index/n.pkl')\nCreate\n\tm1 = generate_orthonormal_matrix(n)\n\tm2 = generate_orthonormal_matrix(n)\nSave matrices\n\tsave_object('../../index/m1.pkl', m1)\n\tsave_object('../../index/m2.pkl', m2)\nType 'y' once done\n\nEnter here: ")
 
-    # Get transpose of matrices
-    m1t = get_transpose(m1)
-    m2t = get_transpose(m2)
+    if user_input == "y":
+        m1 = load_object(index_directory + "/m1.pkl")
+        m2 = load_object(index_directory + "/m2.pkl")
 
-    # Get matrix inverses
-    m1i = get_inverse(m1)
-    m2i = get_inverse(m2)
+        # Get transpose of matrices
+        m1t = get_transpose(m1)
+        m2t = get_transpose(m2)
 
-    # Save matrices
-    save_object(index_directory + "/m1t.pkl", m1t)
-    save_object(index_directory + "/m2t.pkl", m2t)
-    save_object(index_directory + "/m1i.pkl", m1i)
-    save_object(index_directory + "/m2i.pkl", m2i)
+        # Get matrix inverses
+        m1i = get_inverse(m1)
+        m2i = get_inverse(m2)
 
-    build_bbt(corpus_textblobs, index_directory)
+        # Save matrices
+        save_object(index_directory + "/m1t.pkl", m1t)
+        save_object(index_directory + "/m2t.pkl", m2t)
+        save_object(index_directory + "/m1i.pkl", m1i)
+        save_object(index_directory + "/m2i.pkl", m2i)
+
+        build_bbt(corpus_textblobs, index_directory)
+
+    else:
+        print("\nError proceeding with STAGE 2 of index generation. Index generation terminating...\n")

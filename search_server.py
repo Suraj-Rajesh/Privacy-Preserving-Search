@@ -136,4 +136,4 @@ if __name__ == "__main__":
         encrypted_search_server.start()
     except KeyboardInterrupt:
         encrypted_search_server.serverSock.close()
-        print("Server shutting down...\n")
+        print("\nServer shutting down...\n")
