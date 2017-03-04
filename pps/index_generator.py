@@ -151,6 +151,7 @@ def build_bbt(corpus_textblobs, index_directory):
         # First stage handled separately as internal nodes store vsm indices as list from vsm_hash of file nodes
         new_processing_list = list()
         for i in range(0, len(current_processing_list), 2):
+            print("STAGE 1 of BBT_CREATE: " + str(i) + " of " + str(len(current_processing_list)))
             new_vsm_hash = create_vsm_hash(current_processing_list[i].vsm_hash, current_processing_list[i + 1].vsm_hash)
             # Encrypt vsm hash
             new_vsm_hash = [sha256(salt.encode() + str(value).encode()).hexdigest() for value in new_vsm_hash]
@@ -168,6 +169,7 @@ def build_bbt(corpus_textblobs, index_directory):
         # 2^(Stage)-1 stages of processing for a balanced binary tree
         # Generating internal nodes
         for stage in range(stages_of_processing - 1):
+            print("STAGE 2 of BBT_CREATE: " + str(stage) + " of " + str(stages_of_processing - 1))
             new_processing_list = list()
 
             for i in range(0, len(current_processing_list), 2):
