@@ -128,9 +128,10 @@ def build_bbt(corpus_textblobs, index_directory):
 
     try:
         current_processing_list = list()
-
+        count = 1
         # For each file to be indexed
         for filename, textblob in corpus_textblobs.items():
+            print("Processing file no. " + str(count))
             # Calculate score of all words in the textblob corresponding to that file
             word_score_index = {word: tfidf(word, textblob, corpus_textblobs) for word in textblob.words}
             # Index each word into the plain search index
@@ -145,6 +146,8 @@ def build_bbt(corpus_textblobs, index_directory):
 
             file_node = Node(vsm_hash = vsm_hash, filename = aes_encrypt(filename, aes_key), encrypted_vsm_hash_1 = encrypted_vsm_hash_1, encrypted_vsm_hash_2 = encrypted_vsm_hash_2)       
             current_processing_list.append(file_node)
+
+            count += 1
 
         stages_of_processing = find_two_exponent(len(current_processing_list))
     
