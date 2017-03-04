@@ -17,3 +17,6 @@ Dependencies on CentOS:
     >> nltk.download("all")
 
 6. $ python3 -m textblob.download_corpora
+
+If any problems with pycrypto, refer this url for troubleshooting,
+   https://techglimpse.com/openstack-installation-errors-solutions/
